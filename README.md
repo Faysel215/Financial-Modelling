@@ -1,6 +1,8 @@
 # Marked Hawkes Process Trading Simulator
 This repository contains an interactive financial market simulator that models how news sentiment can influence market activity and tests a volatility-based trading strategy against these dynamics. The simulation is built on a self-exciting Marked Hawkes Process, where market events are influenced by a combination of baseline volatility, historical events, and external "shocks" from financial news sentiment.The project is presented as an interactive web application built with Streamlit, allowing users to adjust all key model parameters and instantly see the impact on both market behavior and trading strategy performance.
 
+![UI Preview](mhp-screenshot.png)
+
 ## 🚀 Key Features
 - **Interactive Dashboard:** A user-friendly interface built with Streamlit to control all simulation parameters without touching the code.
 - **Sentiment-Driven Events:** Models how positive or negative news can "jolt" the intensity of market activity.
