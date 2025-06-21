@@ -20,7 +20,7 @@ The DLN is not a single model but the central concept our simulator is built to 
 
 ## System Architecture
 The components work in a synergistic loop, enabling a cycle of simulation, analysis, and calibration.
-
+```
 +------------------+      +-------------------------+      +-------------------+
 |    Real Market   |----->|   TMHP & GPS Model      |----->|   Calibrated      |
 |       Data       |      |       Calibration       |      | Agent Parameters  |
@@ -31,9 +31,10 @@ The components work in a synergistic loop, enabling a cycle of simulation, analy
 |  DLN Analysis &  |<-----|     Simulated Market    |<-----|  Agent-Based      |
 |   Visualization  |      |   Data (Order Books)    |      |   Simulator       |
 +------------------+      +-------------------------+      +-------------------+
+```
 
-Repository Structure
-.
+## Repository Structure
+```
 ├── Dynamic Liquidity Nexus (DLQ)/                
 │   ├── Agentic LOB simulation/
 │   │   ├── Outline.md
@@ -67,6 +68,6 @@ Repository Structure
 │   ├── README.md            
 │   ├── Outline.md
 │   ├── tmhp-app.py
-
+```
 License
 This project is licensed under the MIT License - see the LICENSE file for details.
