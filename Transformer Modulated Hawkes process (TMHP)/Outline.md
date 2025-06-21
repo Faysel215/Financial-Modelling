@@ -22,20 +22,21 @@
 
 ## 1.3. Simulation Engine: simulate_tmhp Function (Ogata's Thinning Algorithm)
 - **Objective:** Implement Ogata's thinning algorithm to generate new events from a "trained" TMHP model.
-- Inputs: A model instance, historical event times and types, a maximum simulation time, and the number of event types.
-- Algorithm Steps:
-    1. Initialize sim_times and sim_types with the provided history.
-    2. Feed the initial history through the model to get the final hidden state, h_N.
+- **Inputs**: A model instance, historical event times and types, a maximum simulation time, and the number of event types.
+- **Algorithm Steps:**
+    1. Initialize `sim_times` and `sim_types` with the provided history.
+    2. Feed the initial history through the model to get the final hidden state, `h_N`.
     3. Start a loop that continues until the current_time exceeds `max_simulation_time`.
     4. Find an upper bound ($\lambda_\max$): Calculate the intensity over a short future interval to find a maximum value. This is the "majorant" process.
-    5. Propose a new event: Draw a candidate time interval from an exponential distribution with rate λ_max. Add this to current_time.
-    6. Accept or Reject (Thinning): Calculate the true total intensity at the candidate time. Draw a random number $u$ from $U[0, 1]$. If $\mu < \lambda_\text{true} / \lambda_\max$, accept the event.
-    7. If Accepted:
-- Determine the type of the new event by sampling from the categorical distribution defined by the individual event intensities at that moment.
-- Append the new time and type to the simulation lists.
-- Crucially, update the hidden state by feeding the entire new sequence back into the model to get the next h_N+1.
-8. Repeat from step 4.
-- Output: The complete list of historical and newly simulated event times and types.
+    5. Propose a new event: Draw a candidate time interval from an exponential distribution with rate $\lambda_\max$. Add this to `current_time`.
+    6. **Accept or Reject (Thinning):** Calculate the true total intensity at the candidate time.
+    7. Draw a random number $u$ from $U[0, 1]$. If $\mu < \lambda_\text{true} / \lambda_\max$, accept the event.
+    8. If Accepted:
+        - Determine the type of the new event by sampling from the categorical distribution defined by the individual event intensities at that moment.
+        - Append the new time and type to the simulation lists.
+        - Crucially, update the hidden state by feeding the entire new sequence back into the model to get the next h_N+1.
+    9. Repeat from step 4.
+- **Output:** The complete list of historical and newly simulated event times and types.
 
 ## Part 2: Interactive User Interface (Streamlit)
 ### 2.1. Main Application Structure: `main` Function
@@ -66,14 +67,14 @@
     - Remove y-axis ticks for clarity: `ax1.set_yticks([])`.
 - **Plot 2 (Intensity Function):**
     - Create a fine-grained time axis (`np.linspace`).
-    - Loop through this time axis, calculating the total conditional intensity $\ambda(t)$ at each point using the compute_intensity method. This will require carefully tracking which hidden state to use based on the most recent event before time $t$.
+    - Loop through this time axis, calculating the total conditional intensity $\lambda(t)$ at each point using the `compute_intensity` method. This will require carefully tracking which hidden state to use based on the most recent event before time $t$.
     - Plot the intensity for each event type and the total intensity.
     - Draw vertical lines (`axvline`) at each event time to show the correspondence between events and intensity jumps.
     - Display the final plot in Streamlit using `st.pyplot(fig)`.
 
 ## Part 3: Future Enhancements & Refinements
-Implement Proper Training: Replace the placeholder training loop with a proper negative log-likelihood loss function for point processes.
-Real Data Integration: Add functionality to upload real-world financial event data (e.g., from a CSV file) instead of using generated data.
-Performance Metrics: Display quantitative metrics about the simulation, such as the total number of generated events, average intensity, etc.
-Advanced Visualizations: Add interactive plots (e.g., using Plotly) that allow users to zoom in on the timeline and hover over points to see details.
-Model Caching: Use st.cache_data on the simulation function to prevent re-computation when only UI elements are changed, improving responsiveness.
+- **Implement Proper Training:** Replace the placeholder training loop with a proper negative log-likelihood loss function for point processes.
+- **Real Data Integration:** Add functionality to upload real-world financial event data (e.g., from a CSV file) instead of using generated data.
+- **Performance Metrics:** Display quantitative metrics about the simulation, such as the total number of generated events, average intensity, etc.
+- **Advanced Visualizations:** Add interactive plots (e.g., using Plotly) that allow users to zoom in on the timeline and hover over points to see details.
+- **Model Caching:** Use st.cache_data on the simulation function to prevent re-computation when only UI elements are changed, improving responsiveness.
