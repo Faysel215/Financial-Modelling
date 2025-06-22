@@ -1,4 +1,4 @@
-# Project: Transformer-Modulated Hawkes Process (TMHP) Simulator
+# Transformer-Modulated Hawkes Process (TMHP) Simulator
 **Objective:** To implement and visualize a Transformer-Modulated Hawkes Process, enabling users to interactively simulate event sequences and explore the model's behavior under different parameter configurations.
 ## Part 1: Foundational Components (Python & PyTorch)
 ### 1.1. Model Architecture: `TransformerHawkesProcess` Class
