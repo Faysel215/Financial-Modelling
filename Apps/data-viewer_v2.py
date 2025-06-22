@@ -60,7 +60,7 @@ st.write(
 )
 
 # --- API Request ---
-API_ACCESS_KEY = "509f8011f18787726d82ebeda521e579"
+API_ACCESS_KEY = "api-key"
 API_URL = "http://api.marketstack.com/v1/eod"
 
 params = {
