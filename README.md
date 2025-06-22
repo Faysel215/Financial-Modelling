@@ -69,5 +69,3 @@ The components work in a synergistic loop, enabling a cycle of simulation, analy
 │   ├── Outline.md
 │   ├── tmhp-app.py
 ```
-License
-This project is licensed under the MIT License - see the LICENSE file for details.
