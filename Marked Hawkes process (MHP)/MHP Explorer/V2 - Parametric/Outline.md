@@ -4,7 +4,7 @@
 
 Our goal is to model the intensity of volatility spikes, λ(t). We'll use the specific parametric form outlined in the guide. The full intensity equation for a new volatility event at time t will be:
 
-$$\lambda(t) = \mu + \sum_{t_i < t} (\beta_1 \cdot \text{sentiment}_i + \beta_2 \cdot \text{odds_change}_i) \cdot \alpha e^{-\alpha(t - t_i)}$$
+$\lambda(t) = \mu + \sum_{t_i < t} (\beta_1 \cdot \text{sentiment}_i + \beta_2 \cdot \text{odds_change}_i) \cdot \alpha e^{-\alpha(t - t_i)}$
 
 Here's what each part represents in our design:
 
