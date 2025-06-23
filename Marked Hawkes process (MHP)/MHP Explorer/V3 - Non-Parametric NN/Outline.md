@@ -43,15 +43,15 @@ Where `NN(m_i)` is the output of the trained neural network for the mark `m_i`.
 - **Plot 3: Estimated Intensity $\lambda(t)$:** Visualizes the final Hawkes intensity, showing jumps after events.
 - **Plot 4: Learned Influence Surface `κ(m)`:** The key non-parametric result. A 2D contour plot showing the learned influence for every combination of input marks.
 
-# 4. How to Interpret the Results
-## 4.1. Reading the Influence Surface (Contour Plot):
-Color Scale: Bright yellow areas correspond to mark combinations that are highly excitatory (trigger many future events). Dark purple areas have low or no influence.
-Axes: The x-axis represents normalized sentiment, and the y-axis represents normalized odds change.
+## 4. How to Interpret the Results
+- **4.1. Reading the Influence Surface (Contour Plot):**
+    - **Color Scale:** Bright yellow areas correspond to mark combinations that are highly excitatory (trigger many future events). Dark purple areas have low or no influence.
+    - **Axes:** The x-axis represents normalized sentiment, and the y-axis represents normalized odds change.
 
 ## 4.2. Identifying Non-Linear Patterns:
-Gradients: If color consistently brightens along one axis, it indicates a strong, almost-linear influence from that feature.
-"Hotspots" & "Coldspots": Look for isolated islands of bright yellow or dark purple. This reveals specific, non-linear conditions that are highly influential (e.g., "only events with very negative sentiment and very large odds changes are destabilizing").
-Curvature: A curved or saddle-shaped surface indicates complex interactions that a linear model would fail to capture.
+- **Gradients:** If color consistently brightens along one axis, it indicates a strong, almost-linear influence from that feature.
+- **"Hotspots" & "Coldspots":** Look for isolated islands of bright yellow or dark purple. This reveals specific, non-linear conditions that are highly influential (e.g., "only events with very negative sentiment and very large odds changes are destabilizing").
+- **Curvature:** A curved or saddle-shaped surface indicates complex interactions that a linear model would fail to capture.
 
 ## Flowchart
 ```mermaid
