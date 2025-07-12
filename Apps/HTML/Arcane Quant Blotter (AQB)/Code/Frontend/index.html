@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcane Quant Blotter (Live 3D)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #111827; color: #d1d5db; }
+        .blotter-grid { display: grid; grid-template-columns: repeat(12, 1fr); grid-template-rows: repeat(8, minmax(0, 1fr)); gap: 0.5rem; height: calc(100vh - 5rem); }
+        .card { background-color: #1f2937; border: 1px solid #374151; border-radius: 0.5rem; padding: 0.75rem; overflow: hidden; display: flex; flex-direction: column; }
+        .card-header { font-weight: 600; font-size: 0.875rem; color: #9ca3af; padding-bottom: 0.5rem; border-bottom: 1px solid #374151; flex-shrink: 0; }
+        .card-content { flex-grow: 1; overflow: auto; position: relative; }
+        .card-content::-webkit-scrollbar { width: 6px; height: 6px; }
+        .card-content::-webkit-scrollbar-track { background: #1f2937; }
+        .card-content::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+        .table-sm th, .table-sm td { padding: 0.25rem 0.5rem; font-size: 0.75rem; white-space: nowrap; text-align: right; }
+        .table-sm thead th { position: sticky; top: 0; background-color: #1f2937; z-index: 10; }
+        .table-sm .strike-col { background-color: #374151; font-weight: bold; text-align: center; color: #d1d5db; }
+        .call-side { background-color: rgba(34, 197, 94, 0.05); }
+        .put-side { background-color: rgba(239, 68, 68, 0.05); }
+        .call-side:hover { background-color: rgba(34, 197, 94, 0.15); }
+        .put-side:hover { background-color: rgba(239, 68, 68, 0.15); }
+        .plot-container, .plot-container .svg-container { width: 100%; height: 100%; }
+        .loader { text-align: center; padding-top: 4rem; color: #6b7280; }
+    </style>
+</head>
+<body class="p-4">
+
+    <!-- Header -->
+    <header class="bg-gray-900/50 backdrop-blur-sm fixed top-0 left-0 right-0 z-20 border-b border-gray-700">
+        <div class="container mx-auto px-4 h-16 flex items-center justify-between">
+            <h1 class="text-xl font-bold text-gray-200">Arcane Quant Blotter</h1>
+            <div class="flex items-center space-x-4">
+                <input type="text" id="tickerInput" placeholder="Ticker..." class="bg-gray-800 border border-gray-700 rounded-md py-1.5 px-3 text-sm w-40 focus:ring-2 focus:ring-blue-500 focus:outline-none" value="TSLA">
+                <div class="flex items-center space-x-3 text-sm">
+                    <span class="text-gray-400">VIX: <span id="vixValue" class="text-green-400">--</span></span>
+                    <span class="text-gray-400">SKEW: <span id="skewIdxValue" class="text-red-400">--</span></span>
+                    <span class="text-gray-400">SPX: <span id="spxValue" class="text-green-400">--</span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-20">
+        <div class="blotter-grid">
+            <!-- Option Chain -->
+            <div class="card" style="grid-column: span 6; grid-row: span 4;">
+                <div class="card-header" id="optionChainHeader">Option Chain</div>
+                <div class="card-content" id="optionChainContent"><div class="loader">Loading Option Data...</div></div>
+            </div>
+
+            <!-- IV Surface -->
+            <div class="card" style="grid-column: span 6; grid-row: span 4;">
+                <div class="card-header">IV Surface</div>
+                <div id="ivSurfaceContainer" class="card-content plot-container"></div>
+            </div>
+
+            <!-- Greek: Delta -->
+            <div class="card" style="grid-column: span 3; grid-row: span 2;">
+                <div class="card-header">Delta Surface</div>
+                <div id="deltaSurfaceContainer" class="card-content plot-container"></div>
+            </div>
+
+            <!-- Greek: Gamma -->
+            <div class="card" style="grid-column: span 3; grid-row: span 2;">
+                <div class="card-header">Gamma Surface</div>
+                <div id="gammaSurfaceContainer" class="card-content plot-container"></div>
+            </div>
+
+            <!-- Greek: Vega -->
+            <div class="card" style="grid-column: span 3; grid-row: span 2;">
+                <div class="card-header">Vega Surface</div>
+                <div id="vegaSurfaceContainer" class="card-content plot-container"></div>
+            </div>
+
+            <!-- Greek: Theta -->
+            <div class="card" style="grid-column: span 3; grid-row: span 2;">
+                <div class="card-header">Theta Surface</div>
+                <div id="thetaSurfaceContainer" class="card-content plot-container"></div>
+            </div>
+            
+            <!-- IV Analysis -->
+            <div class="card" style="grid-column: span 12; grid-row: span 2;">
+                <div class="card-header">IV Analysis</div>
+                <div class="card-content p-2 grid grid-cols-3 gap-4">
+                    <div class="h-full"><canvas id="ivSkewChart"></canvas></div>
+                    <div class="h-full"><canvas id="ivTermStructureChart"></canvas></div>
+                    <div id="keyMetrics" class="text-xs space-y-2">
+                         <h4 class="font-semibold text-sm text-gray-300">Key IV Metrics</h4>
+                         <div class="grid grid-cols-2 gap-x-4 gap-y-1">
+                            <span>Underlying:</span> <span id="underlyingValue" class="text-right font-mono text-gray-300">--</span>
+                            <span>IV Rank (IVR):</span> <span id="ivrValue" class="text-right font-mono text-yellow-400">--</span>
+                            <span>IV Percentile (IVP):</span> <span id="ivpValue" class="text-right font-mono text-yellow-400">--</span>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+<script>
+const BACKEND_URL = 'http://127.0.0.1:8000';
+let ivSkewChart, ivTermChart;
+
+// --- Helper Functions ---
+const formatPct = (val) => `${((val || 0) * 100).toFixed(1)}%`;
+const formatNum = (val, dec = 2) => (val || 0).toFixed(dec);
+const formatBigNum = (val) => {
+    const num = val || 0;
+    return num > 1000 ? `${(num / 1000).toFixed(1)}k` : num;
+};
+
+// --- Plotting Functions ---
+function drawSurfacePlot(containerId, x, y, z, title) {
+    const data = [{ x, y, z, type: 'surface', colorscale: 'Viridis', showscale: false, contours: { z: { show: true, usecolormap: true, highlightcolor: "#42f462", project:{z: true} } } }];
+    const layout = {
+        title: { text: title, font: { color: '#d1d5db', size: 12 } },
+        autosize: true,
+        margin: { l: 5, r: 5, b: 20, t: 30 },
+        scene: {
+            xaxis: { title: 'Strike', titlefont: { color: '#9ca3af', size: 10 }, tickfont: { color: '#9ca3af', size: 8 }, gridcolor: '#374151' },
+            yaxis: { title: 'Days to Expiry', titlefont: { color: '#9ca3af', size: 10 }, tickfont: { color: '#9ca3af', size: 8 }, gridcolor: '#374151' },
+            zaxis: { title: 'Value', titlefont: { color: '#9ca3af', size: 10 }, tickfont: { color: '#9ca3af', size: 8 }, gridcolor: '#374151' }
+        },
+        paper_bgcolor: '#1f2937',
+        plot_bgcolor: '#1f2937'
+    };
+    Plotly.newPlot(containerId, data, layout, {responsive: true, displayModeBar: false});
+}
+
+function initializeCharts() {
+    const chartOptions = (title, xLabel, yLabel) => ({
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, title: { display: true, text: title, color: '#9ca3af' } },
+        scales: {
+            x: { title: { display: true, text: xLabel, color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } },
+            y: { title: { display: true, text: yLabel, color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } }
+        }
+    });
+    ivSkewChart = new Chart(document.getElementById('ivSkewChart').getContext('2d'), { type: 'line', data: { labels: [], datasets: [] }, options: chartOptions('IV Skew by Delta', 'Delta', 'Implied Volatility (%)') });
+    ivTermChart = new Chart(document.getElementById('ivTermStructureChart').getContext('2d'), { type: 'line', data: { labels: [], datasets: [] }, options: chartOptions('IV Term Structure', 'Expiration', 'ATM IV (%)') });
+}
+
+// --- UI Update Functions ---
+function updateOptionChain(chain, underlyingPrice) {
+    const contentDiv = document.getElementById('optionChainContent');
+    let tableRows = chain.map(row => {
+        const isATM = Math.abs(row.strike - underlyingPrice) < 5;
+        const atmClass = isATM ? 'bg-blue-900/30' : '';
+        return `
+            <tr class="${atmClass}">
+                <td class="call-side">${formatPct(row.call_iv)}</td><td class="call-side">${formatNum(row.call_delta)}</td>
+                <td class="call-side">${formatNum(row.call_bid)}</td><td class="call-side">${formatNum(row.call_ask)}</td>
+                <td class="call-side">${formatBigNum(row.call_vol)}</td><td class="call-side">${formatBigNum(row.call_oi)}</td>
+                <td class="strike-col">${formatNum(row.strike)}</td>
+                <td class="put-side">${formatBigNum(row.put_vol)}</td><td class="put-side">${formatBigNum(row.put_oi)}</td>
+                <td class="put-side">${formatNum(row.put_bid)}</td><td class="put-side">${formatNum(row.put_ask)}</td>
+                <td class="put-side">${formatNum(row.put_delta)}</td><td class="put-side">${formatPct(row.put_iv)}</td>
+            </tr>`;
+    }).join('');
+    contentDiv.innerHTML = `<table class="w-full text-left table-sm">
+        <thead class="text-gray-400">
+            <tr><th colspan="6" class="text-center text-green-400">CALLS</th><th class="strike-col text-center">Strike</th><th colspan="6" class="text-center text-red-400">PUTS</th></tr>
+            <tr><th>IV</th><th>Delta</th><th>Bid</th><th>Ask</th><th>Vol</th><th>OI</th><th class="strike-col"></th><th>Vol</th><th>OI</th><th>Bid</th><th>Ask</th><th>Delta</th><th>IV</th></tr>
+        </thead><tbody>${tableRows}</tbody></table>`;
+}
+
+function update2DCharts(ivSkew, ivTerm) {
+    ivSkewChart.data = { labels: ivSkew.deltas.map(d => formatNum(d, 1)), datasets: [{ label: 'IV Skew', data: ivSkew.ivs.map(iv => iv * 100), borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.1)', tension: 0.4, pointRadius: 0 }] };
+    ivSkewChart.update();
+    ivTermChart.data = { labels: ivTerm.expiries, datasets: [{ label: 'Term Structure', data: ivTerm.ivs.map(iv => iv * 100), borderColor: '#a78bfa', backgroundColor: 'rgba(167, 139, 250, 0.1)', tension: 0.1, pointRadius: 2 }] };
+    ivTermChart.update();
+}
+
+function updateUI(data) {
+    // Update headers and metrics
+    document.getElementById('optionChainHeader').innerText = `Option Chain - ${data.ticker} [Expiry: ${data.expiry}]`;
+    document.getElementById('vixValue').innerText = formatNum(data.metrics.vix);
+    document.getElementById('spxValue').innerText = formatNum(data.metrics.spx);
+    document.getElementById('skewIdxValue').innerText = formatNum(data.metrics.skewIdx);
+    document.getElementById('underlyingValue').innerText = formatNum(data.underlyingPrice);
+    document.getElementById('ivrValue').innerText = data.metrics.ivr;
+    document.getElementById('ivpValue').innerText = data.metrics.ivp;
+
+    // Update main content
+    updateOptionChain(data.optionChain, data.underlyingPrice);
+    update2DCharts(data.ivSkew, data.ivTerm);
+    
+    // Defer 3D plot rendering to prevent race conditions
+    setTimeout(() => {
+        const { strikes, expiries } = data.surfacePlots;
+        drawSurfacePlot('ivSurfaceContainer', strikes, expiries, data.surfacePlots.iv, 'IV');
+        drawSurfacePlot('deltaSurfaceContainer', strikes, expiries, data.surfacePlots.delta, 'Delta');
+        drawSurfacePlot('gammaSurfaceContainer', strikes, expiries, data.surfacePlots.gamma, 'Gamma');
+        drawSurfacePlot('vegaSurfaceContainer', strikes, expiries, data.surfacePlots.vega, 'Vega');
+        drawSurfacePlot('thetaSurfaceContainer', strikes, expiries, data.surfacePlots.theta, 'Theta');
+    }, 10); // A small delay is often enough
+}
+
+// --- Main Application Logic ---
+async function fetchData(ticker) {
+    console.log(`Fetching data for ${ticker}...`);
+    document.getElementById('optionChainContent').innerHTML = `<div class="loader">Loading ${ticker} Data...</div>`;
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/data?ticker=${ticker}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        console.log("Data received from backend:", data); // Log data for debugging
+        updateUI(data);
+    } catch (error) {
+        console.error("Failed to fetch data:", error);
+        document.getElementById('optionChainContent').innerHTML = `<div class="loader text-red-400">Failed to load data. Is the Python backend running?</div>`;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initializeCharts();
+    const tickerInput = document.getElementById('tickerInput');
+    fetchData(tickerInput.value || 'TSLA');
+    tickerInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            fetchData(e.target.value);
+            e.target.blur();
+        }
+    });
+});
+</script>
+
+</body>
+</html>
+
