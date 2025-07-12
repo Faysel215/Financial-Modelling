@@ -34,38 +34,4 @@ The components work in a synergistic loop, enabling a cycle of simulation, analy
 ```
 
 ## Repository Structure
-```
-├── Dynamic Liquidity Nexus (DLQ)/                
-│   ├── Agentic LOB simulation/
-│   │   ├── Outline.md
-│   │   └── README.md
-|   |   └── agentic_lob_sim.py
-│   └── LOB simulation/
-│   │   ├── Overview.md
-│   │   └── README.md
-|   |   └── lob_sim.py
-├── Gaussian Process Surrogates (GPS)/
-│   ├── README.md             
-│   ├── gps_greeks_estim.ipynb      
-├── Marked Hawkes process (MHP)/              
-│   └── images/
-│   │   ├── mhp-screenshot.png
-│   │   └── thinning-algo_optim.png
-│   ├── mhp_trading_sim.py 
-│   ├── README.md             
-│   ├── agentic_mhp_trading_sim.py
-│   ├── mhp_thinning-algo_optim.ipynb   
-├── Taker Ecosystem/                   
-│   ├── README.md            
-│   ├── LOB_sim_logic.md       
-│   ├── img/            
-│   │   ├── tmhp.py
-│   │   └── gps.py
-│   ├── lob_takers.py                        
-├── Tranformer Modulated HAwkes process (MHP)
-│   ├── img/            
-│   │   ├── tmhp-dashboard.png
-│   ├── README.md            
-│   ├── Outline.md
-│   ├── tmhp-app.py
-```
+
