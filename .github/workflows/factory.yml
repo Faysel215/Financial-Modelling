@@ -1,0 +1,43 @@
+name: Protoss Factory Protocol
+
+# Triggers the workflow on:
+# 1. Pushes to the main branch
+# 2. Every Monday at 00:00 UTC (Scheduled Maintenance)
+# 3. Manually via the Actions tab (Instant Warp-in)
+on:
+  push:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  # Job 1: The Structure Integrity Check
+  integrity-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Warp-in Repository
+        uses: actions/checkout@v3
+
+      - name: Initialize Node Environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Report Status
+        run: |
+          echo "::notice title=Factory Status::System Online"
+          echo "Current Date: $(date)"
+          echo "Repository: ${{ github.repository }}"
+          echo "Warp Field: Stable"
+
+  # Job 2: File Enumeration (Simulates a scan)
+  quality-scan:
+    needs: integrity-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Codebase
+        uses: actions/checkout@v3
+      
+      - name: File Enumeration
+        run: ls -R
